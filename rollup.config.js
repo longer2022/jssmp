@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 module.exports = [{
+=======
+module.exports = {
+>>>>>>> f512201 (dev)
   input: './src/jssplaylist.js',
   output: [{
     file: 'dist/import_jssplaylist.js',
