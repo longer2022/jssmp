@@ -1,11 +1,7 @@
 {
   "name": "jssmp",
   "version": "0.1",
-<<<<<<< HEAD
   "description": "JS Scripts for SMP",
-=======
-  "description": "JS Smooth scripts",
->>>>>>> f512201 (dev)
   "maintainers": [],
   "devDependencies": {
     "rollup": "^2.26.3",

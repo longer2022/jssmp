@@ -1,6 +1,5 @@
-<<<<<<< HEAD
 // JS Smooth Playlist.
-=======
+
 import "./common"
 import { oInputbox } from "./inputbox"
 
@@ -4600,4 +4599,3 @@ export function on_drag_drop(action, x, y, mask) {
 		action.Effect = 1;
 	}
 };
->>>>>>> f512201 (dev)
