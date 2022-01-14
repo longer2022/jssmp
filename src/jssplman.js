@@ -49,12 +49,13 @@ class PanelProperties {
 			set(new_value) {
 				this[item[2] + "_internal"].set(new_value);
 			}
-		})
+		});
 	}
 
 	remove(k) {
 		let p = this[k];
 		p && p.set(p.name, null);
+		delete this[k];
 	}
 
 	removeProp(name) {
