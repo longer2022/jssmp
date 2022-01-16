@@ -97,28 +97,21 @@ const SizeLimit = {
 	ElementChildren: 2,
 }
 
-class Composition {
-	constructor(props) {
-		props = props || {};
-		this.margin = props.margin || new Margin();
-		this.padding = props.padding || new Margin();
 
-		this._visible = true;
+class CompositionBase {
+	constructor(props) {
+		this.props = props || {};
+		this.margin = this.props.margin || new Margin();
+		this.padding = this.props.padding || new Margin();
+		this.minWidth = this.props.minWidth || (this.props.maxWidth = 0);
+		this.minHeight = this.props.minHeight || (this.props.minHeight = 0);
+		this.maxWidth = this.props.maxWidth || (this.props.maxWidth = 0);
+		this.maxHeight = this.props.maxHeight || (this.props.maxHeight = 0);
+
 		this.transparentToMouse = false;
 		this.sizeLimit = SizeLimit.No;
 		this.children = [];
 		this.parent = null;
-	}
-
-	get visible() {
-		return this._visible;
-	}
-
-	set visible(v) {
-		if (this._visible !== v) {
-			this._visible = v;
-			bufferStateChange();
-		}
 	}
 
 	addChild(child) {
@@ -136,6 +129,40 @@ class Composition {
 
 		bufferStateChange();
 		return true;
+	}
+
+
+	get visible() {
+		return this.props.visible || (this.props.visible = true);
+	}
+
+	set visible(v) {
+		if (this.visible !== v) {
+			this.props.visible = v;
+			bufferStateChange();
+		}
+	}
+
+	get margin() {
+		return this.props.margin || (this.props.margin = new Margin());
+	}
+
+	set margin(val) {
+		if (!this.margin.eq(val)) {
+			this.props.margin = val;
+			bufferStateChange();
+		}
+	}
+
+	get padding() {
+		return this.props.padding || (this.props.padding = new Margin());
+	}
+
+	set padding(val) {
+		if (!this.padding.eq(val)) {
+			this.props.padding = val;
+			bufferStateChange();
+		}
 	}
 
 	getBounds() {
@@ -162,6 +189,66 @@ class Composition {
 		client.height -= this.margin.bottom + this.padding.bottom;
 		return client;
 	}
+
+	getPreferredClientSize() {
+		let minSize = new Dimention(this.minWidth, this.minHeight);
+		if (this.sizeLimit !== SizeLimit.No) {
+			// if ownedElement, set to element's min size.
+		}
+		if (this.sizeLimit === SizeLimit.ElementChildren) {
+			for (let i = 0; i < this.children.length; i++) {
+				const child = this.children[i];
+				const childBounds = child.getPreferredBounds();
+				// ???
+				if (minSize.width < childBounds.right) {
+					minSize.width = childBounds.right;
+				}
+				if (minSize.height < childBounds.bottom) {
+					minSize.height = childBounds.bottom;
+				}
+			}
+		}
+		return minSize;
+	}
+
+	_getBoundsInternal(expectBounds) {
+		let minSize = this.getPreferredClientSize();
+		minSize.width += this.margin.left + this.margin.right + this.padding.right + this.padding.left;
+		minSize.height += this.margin.top + this.margin.bottom + this.padding.top + this.padding.bottom;
+		let w = expectBounds.width;
+		let h = expectBounds.height;
+		if (minSize.width < w) { minSize.width = w; }
+		if (minSize.height < h) { minSize.height = h }
+		return new Rect(this.x, this.y, minSize.width, minSize.height);
+	}
+
+	getPreferredBounds() {
+		let client = this.getPreferredClientSize();
+		return this._getBoundsInternal(this.x, this.y, client.width, client.height);
+	}
+
+	getBounds() {
+		return this.getPreferredBounds();
+	}
+
+	updateBounds(prevBounds) {
+		if (prevBounds && !prevBounds.eq(this.prevBounds)) {
+			this.prevBounds = bounds;
+			// boundsChanged.fire(e);
+			bufferStateChange();
+		}
+	}
+
+	get sizeAffectParent() {
+		return this.props.sizeAffectParent || (this.props.sizeAffectParent = false);
+	}
+
+	set sizeAffectParent(val) {
+		if (val !== this.sizeAffectParent) {
+			this.props.sizeAffectParent = val;
+			bufferStateChange();
+		}
+	}
 }
 
 function bufferStateChange() { }
@@ -171,13 +258,13 @@ const Direction = {
 	V: 1,
 }
 
-class StackComposition extends Composition {
+class StackComposition extends CompositionBase {
 	constructor(props) {
 		super(props);
 
 		this.direction = Direction.H;
 		this.gap = 0;
-		this.adjustment = 0;
+		this.adjust = 0;
 		this.stackItems = [];
 		this.stackTotalSize = null;
 		this.stackItemBounds = [];
@@ -219,13 +306,13 @@ class StackComposition extends Composition {
 		totalSize[u] += itemSize[u];
 	}
 
-	adj(u, v, itemBounds) {
+	adjustment(u, v, itemBounds) {
 		if (itemBounds[u] <= 0) {
-			this.adjustment -= itemBounds[u];
+			this.adjust -= itemBounds[u];
 		} else {
 			let overflow = itemBounds[v] - this.prevBounds[v];
 			if (overflow > 0) {
-				this.adjustment -= overflow;
+				this.adjust -= overflow;
 			}
 		}
 	}
