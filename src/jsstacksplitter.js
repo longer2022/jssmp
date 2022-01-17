@@ -131,6 +131,20 @@ class CompositionBase {
 		return true;
 	}
 
+	removeChild(child) {
+		if (!child) { return false; }
+		let idx = this.children.indexOf(child);
+		if (idx === -1) return false;
+
+		child.parent = null;
+		child.parent.onParentChanged(this, null);
+		this.onChildRemoved(child);
+
+		this.children.splice(idx, 1);
+		bufferStateChange();
+		return true;
+	}
+
 
 	get visible() {
 		return this.props.visible || (this.props.visible = true);
@@ -249,6 +263,18 @@ class CompositionBase {
 			bufferStateChange();
 		}
 	}
+
+	get sizeLimit() {
+		return this.props.sizeLimit || (this.props.sizeLimit = SizeLimit.No);
+	}
+
+	set sizeLimit(val) {
+		if (val !== this.sizeLimit) {
+			this.props.sizeLimit = val;
+			bufferStateChange();
+		}
+	}
+
 }
 
 function bufferStateChange() { }
