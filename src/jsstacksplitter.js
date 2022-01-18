@@ -2,8 +2,9 @@
 
 let slice = [].slice;
 
-class Margin {
+export class Margin {
 	constructor(l, t, r, b) {
+		// not ness to slice here.
 		let args = slice.call(null, arguments);
 		if (args.length === 4) {
 			this.left = l;
@@ -26,7 +27,7 @@ class Margin {
 	}
 }
 
-class Dimention {
+export class Dimention {
 	constructor(w, h) {
 		this.width = w || 0;
 		this.height = h || 0;
@@ -52,7 +53,7 @@ class Position {
 	}
 }
 
-class Rect {
+export class Rect {
 	constructor(x, y, w, h) {
 		this.x = x || 0;
 		this.y = y || 0;
@@ -91,14 +92,14 @@ class Rect {
 	}
 }
 
-const SizeLimit = {
+export const SizeLimit = {
 	No: 0,
 	Element: 1,
 	ElementChildren: 2,
 }
 
 
-class CompositionBase {
+export class CompositionBase {
 	constructor(props) {
 		this.props = props || {};
 		this.margin = this.props.margin || new Margin();
@@ -277,14 +278,17 @@ class CompositionBase {
 
 }
 
-function bufferStateChange() { }
+export function bufferStateChange() { }
 
-const Direction = {
+
+
+
+export const Direction = {
 	H: 0,
 	V: 1,
 }
 
-class StackComposition extends CompositionBase {
+export class StackComposition extends CompositionBase {
 	constructor(props) {
 		super(props);
 
