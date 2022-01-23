@@ -1,24 +1,16 @@
 // JS Stack Splitter.
 
-let slice = [].slice;
-
 export class Margin {
 	constructor(l, t, r, b) {
-		// not ness to slice here.
-		let args = slice.call(null, arguments);
-		if (args.length === 4) {
-			this.left = l;
-			this.top = t;
-			this.right = r;
-			this.bottom = b;
-		} else {
-			this.left = this.top = this.right = this.bottom = 0;
-		}
+		this.left = l || 0;
+		this.top = t || 0;
+		this.right = r || 0;
+		this.bottom = b || 0;
 	}
 
-	eq(another) {
-		if (!another) return false;
-		if (another === this) return true;
+	eq(margin) {
+		if (!margin) return false;
+		if (margin === this) return true;
 		return (b instanceof this)
 			&& b.left === this.left
 			&& b.right === this.right
@@ -33,10 +25,10 @@ export class Dimention {
 		this.height = h || 0;
 	}
 
-	eq(d) {
-		if (!d) return false;
-		if (d === this) return true;
-		return this.width === d.width && this.height === d.height;
+	eq(dim) {
+		if (!dim) return false;
+		if (dim === this) return true;
+		return this.width === dim.width && this.height === dim.height;
 	}
 }
 
@@ -46,10 +38,10 @@ class Position {
 		this.y = y || 0;
 	}
 
-	eq(p) {
-		if (!p) return false;
-		if (p === this) return true;
-		return this.x === p.x && this.y === p.y;
+	eq(pos) {
+		if (!pos) return false;
+		if (pos === this) return true;
+		return this.x === pos.x && this.y === pos.y;
 	}
 }
 
@@ -78,13 +70,13 @@ export class Rect {
 		return this.x <= px && px < this.right && this.y <= py && py < this.bottom;
 	}
 
-	eq(bounds) {
-		if (!bounds) return false;
-		if (bounds === this) return true;
-		return this.x === bounds.x
-			&& this.y === bounds.y
-			&& this.width === bounds.width
-			&& this.height === bounds.height
+	eq(rect) {
+		if (!rect) return false;
+		if (rect === this) return true;
+		return this.x === rect.x
+			&& this.y === rect.y
+			&& this.width === rect.width
+			&& this.height === rect.height
 	}
 
 	toString() {
