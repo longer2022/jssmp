@@ -1,31 +1,36 @@
 // JS Stack Splitter.
 
 export class Margin {
-	constructor(l, t, r, b) {
+	left: number;
+	top: number;
+	right: number;
+	bottom: number;
+	constructor(l: number, t: number, r: number, b: number) {
 		this.left = l || 0;
 		this.top = t || 0;
 		this.right = r || 0;
 		this.bottom = b || 0;
 	}
 
-	eq(margin) {
+	eq(margin: Margin) {
 		if (!margin) return false;
 		if (margin === this) return true;
-		return (b instanceof this)
-			&& b.left === this.left
-			&& b.right === this.right
-			&& b.top === this.top
-			&& b.bottom === this.bottom;
+		return margin.left === this.left
+			&& margin.right === this.right
+			&& margin.top === this.top
+			&& margin.bottom === this.bottom;
 	}
 }
 
 export class Dimention {
-	constructor(w, h) {
+	width: number;
+	height: number;
+	constructor(w: number, h: number) {
 		this.width = w || 0;
 		this.height = h || 0;
 	}
 
-	eq(dim) {
+	eq(dim: Dimention) {
 		if (!dim) return false;
 		if (dim === this) return true;
 		return this.width === dim.width && this.height === dim.height;
@@ -33,12 +38,14 @@ export class Dimention {
 }
 
 class Position {
-	constructor(x, y) {
+	x: number;
+	y: number;
+	constructor(x: number, y: number) {
 		this.x = x || 0;
 		this.y = y || 0;
 	}
 
-	eq(pos) {
+	eq(pos: Position) {
 		if (!pos) return false;
 		if (pos === this) return true;
 		return this.x === pos.x && this.y === pos.y;
@@ -46,7 +53,11 @@ class Position {
 }
 
 export class Rect {
-	constructor(x, y, w, h) {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	constructor(x: number, y: number, w: number, h: number) {
 		this.x = x || 0;
 		this.y = y || 0;
 		this.width = w || 0;
@@ -61,12 +72,12 @@ export class Rect {
 		return this.y + this.height;
 	}
 
-	move(ox, oy) {
+	move(ox: number, oy: number) {
 		this.x += ox;
 		this.y += oy;
 	}
 
-	contains(px, py) {
+	contains(px: number, py: number) {
 		return this.x <= px && px < this.right && this.y <= py && py < this.bottom;
 	}
 
@@ -84,18 +95,25 @@ export class Rect {
 	}
 }
 
-export const SizeLimit = {
-	No: 0,
-	Element: 1,
-	ElementChildren: 2,
-}
-
+export const enum SizeLimit { No, Element, ElementChildren };
 
 export class CompositionBase {
+	props: CompositionBase;
+	minWidth: number;
+	minHeight: number;
+	maxWidth: number;
+	maxHeight: number;
+	transparentToMouse: boolean;
+	children: CompositionBase[];
+	parent: CompositionBase;
+	x: number;
+	y: number;
+	private prevBounds: Rect;
+
 	constructor(props) {
 		this.props = props || {};
-		this.margin = this.props.margin || new Margin();
-		this.padding = this.props.padding || new Margin();
+		this.margin = this.props.margin || new Margin(0, 0, 0, 0);
+		this.padding = this.props.padding || new Margin(0, 0, 0, 0);
 		this.minWidth = this.props.minWidth || (this.props.maxWidth = 0);
 		this.minHeight = this.props.minHeight || (this.props.minHeight = 0);
 		this.maxWidth = this.props.maxWidth || (this.props.maxWidth = 0);
@@ -107,11 +125,11 @@ export class CompositionBase {
 		this.parent = null;
 	}
 
-	addChild(child) {
+	addChild(child: CompositionBase) {
 		return this.insertChild(this.children.length, child);
 	}
 
-	insertChild(index, child) {
+	private insertChild(index: number, child: CompositionBase) {
 		if (!child) return false;
 		if (child.parent) return false;
 		this.children.splice(index, 0, child);
@@ -124,7 +142,8 @@ export class CompositionBase {
 		return true;
 	}
 
-	removeChild(child) {
+
+	removeChild(child: CompositionBase) {
 		if (!child) { return false; }
 		let idx = this.children.indexOf(child);
 		if (idx === -1) return false;
@@ -138,6 +157,17 @@ export class CompositionBase {
 		return true;
 	}
 
+	onChildInsert(child: CompositionBase) {
+		throw new Error("Method not implemented.");
+	}
+
+	onChildRemoved(child: CompositionBase) {
+		throw new Error("Method not implemented.");
+	}
+
+	onParentChanged(oldParent: CompositionBase, newParent: CompositionBase) {
+		throw new Error("Method not impl");
+	}
 
 	get visible() {
 		return this.props.visible || (this.props.visible = true);
@@ -151,7 +181,7 @@ export class CompositionBase {
 	}
 
 	get margin() {
-		return this.props.margin || (this.props.margin = new Margin());
+		return this.props.margin || (this.props.margin = new Margin(0, 0, 0, 0));
 	}
 
 	set margin(val) {
@@ -162,7 +192,7 @@ export class CompositionBase {
 	}
 
 	get padding() {
-		return this.props.padding || (this.props.padding = new Margin());
+		return this.props.padding || (this.props.padding = new Margin(0, 0, 0, 0));
 	}
 
 	set padding(val) {
@@ -170,10 +200,6 @@ export class CompositionBase {
 			this.props.padding = val;
 			bufferStateChange();
 		}
-	}
-
-	getBounds() {
-		return new Rect();
 	}
 
 	getGlobalBounds() {
@@ -218,12 +244,12 @@ export class CompositionBase {
 		return minSize;
 	}
 
-	_getBoundsInternal(expectBounds) {
+	private getBoundsInternal(ex: number, ey: number, ew: number, eh: number) {
 		let minSize = this.getPreferredClientSize();
 		minSize.width += this.margin.left + this.margin.right + this.padding.right + this.padding.left;
 		minSize.height += this.margin.top + this.margin.bottom + this.padding.top + this.padding.bottom;
-		let w = expectBounds.width;
-		let h = expectBounds.height;
+		let w = ew;
+		let h = eh;
 		if (minSize.width < w) { minSize.width = w; }
 		if (minSize.height < h) { minSize.height = h }
 		return new Rect(this.x, this.y, minSize.width, minSize.height);
@@ -231,20 +257,21 @@ export class CompositionBase {
 
 	getPreferredBounds() {
 		let client = this.getPreferredClientSize();
-		return this._getBoundsInternal(this.x, this.y, client.width, client.height);
+		return this.getBoundsInternal(this.x, this.y, client.width, client.height);
 	}
 
 	getBounds() {
 		return this.getPreferredBounds();
 	}
 
-	updateBounds(prevBounds) {
+	updateBounds(prevBounds: Rect) {
 		if (prevBounds && !prevBounds.eq(this.prevBounds)) {
-			this.prevBounds = bounds;
+			this.prevBounds = prevBounds;
 			// boundsChanged.fire(e);
 			bufferStateChange();
 		}
 	}
+
 
 	get sizeAffectParent() {
 		return this.props.sizeAffectParent || (this.props.sizeAffectParent = false);
@@ -267,12 +294,9 @@ export class CompositionBase {
 			bufferStateChange();
 		}
 	}
-
 }
 
 export function bufferStateChange() { }
-
-
 
 
 export const Direction = {
@@ -281,6 +305,12 @@ export const Direction = {
 }
 
 export class StackComposition extends CompositionBase {
+	direction: number;
+	gap: number;
+	adjust: number;
+	stackItems: any[];
+	stackTotalSize: any;
+	stackItemBounds: any[];
 	constructor(props) {
 		super(props);
 
@@ -290,12 +320,11 @@ export class StackComposition extends CompositionBase {
 		this.stackItems = [];
 		this.stackTotalSize = null;
 		this.stackItemBounds = [];
-		this.prevBounds = null;
 	}
 
 	updateStackItemBounds() {
-		this.stackTotalSize = new Dimention();
-		let offset = new Position();
+		this.stackTotalSize = new Dimention(0, 0);
+		let offset = new Position(0, 0);
 
 		for (let i = 0; i < this.stackItems.length; i++) {
 			let ox = offset.x;
