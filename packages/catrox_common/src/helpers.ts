@@ -1,36 +1,36 @@
 // Helpers.js
 
-export function RGBA(r, g, b, a) {
+export function RGBA(r: number, g: number, b: number, a: number) {
 	return ((a << 24) | (r << 16) | (g << 8) | (b));
 }
 
-export function RGB(r, g, b) {
+export function RGB(r: number, g: number, b: number) {
 	return (0xff000000 | (r << 16) | (g << 8) | (b));
 }
 
 // returns an array like [192, 0, 0]
-export function toRGB(col) {
+export function toRGB(col: number) {
 	var a = col - 0xFF000000;
 	return [a >> 16, a >> 8 & 0xFF, a & 0xFF];
 }
 
-export function getAlpha(colour) {
+export function getAlpha(colour: number) {
 	return ((colour >> 24) & 0xff);
 }
 
-export function getRed(colour) {
+export function getRed(colour: number) {
 	return ((colour >> 16) & 0xff);
 }
 
-export function getGreen(colour) {
+export function getGreen(colour: number) {
 	return ((colour >> 8) & 0xff);
 }
 
-export function getBlue(colour) {
+export function getBlue(colour: number) {
 	return (colour & 0xff);
 }
 
-export function setAlpha(colour, a) {
+export function setAlpha(colour: number, a: number) {
 	return ((colour & 0x00ffffff) | (a << 24));
 }
 
@@ -42,11 +42,11 @@ export function StringFormat(h_align = 0, v_align = 0, trimming = 0, flags = 0) 
 // Based on human hearing curve
 // 0 <= pos <= 1
 // return a value value: -100 <= vol <= 0
-export function pos2vol(pos) {
+export function pos2vol(pos: number) {
 	return 50 * Math.log(0.99 * pos + 0.01) / Math.LN10;
 }
 
 // Inverse function of pos2vol()
-export function vol2pos(v) {
+export function vol2pos(v: number) {
 	return (Math.pow(10, v / 50) - 0.01) / 0.99;
 }

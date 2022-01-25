@@ -9,5 +9,4 @@
   "include": [
     "./**/*.ts"
   ],
-  "compileOnSave": true
 }

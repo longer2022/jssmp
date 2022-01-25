@@ -1,24 +1,25 @@
 // Ref: https://www.deviantart.com/thanhdat1710/art/Jscript-library-search-1-1-376360761
 // Author:  thanhdat1710
 
-export function prcess_string(str) {
-	str_ = [];
+export function prcess_string(str: string) {
+	let str_: string[] = [];
+	let str__: string[] = [];
 	str = str.toLowerCase();
-	var str = str.split(" ").sort();
-	for (var i in str) {
-		if (str[i] != "")
-			str_.push(str[i]);
+	str__ = str.split(" ").sort();
+	for (let i in str__) {
+		if (str__[i] != "")
+			str_.push(str__[i]);
 	}
 	return str_;
 }
 
-export function prcess_string2(str) {
-	str_ = null;
+export function prcess_string2(str: string) {
+	let str_ = null;
 	str = str.toLowerCase();
-	var str = str.split(" ").sort();
-	for (var i in str) {
-		if (str[i] != "")
-			str_ = { value: str[i], next: str_ };
+	let str__ = str.split(" ").sort();
+	for (let i in str__) {
+		if (str__[i] != "")
+			str_ = { value: str__[i], next: str_ };
 	}
 	return str_;
 }
