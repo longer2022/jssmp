@@ -50,3 +50,14 @@ export function pos2vol(pos: number) {
 export function vol2pos(v: number) {
 	return (Math.pow(10, v / 50) - 0.01) / 0.99;
 }
+
+const SM_CXVSCROLL = 2;
+const SM_CYHSCROLL = 3;
+
+export function get_system_scrollbar_width() {
+	return utils.GetSystemMetrics(SM_CXVSCROLL);
+}
+
+export function get_system_scrollbar_height() {
+	return utils.GetSystemMetrics(SM_CYHSCROLL);
+}

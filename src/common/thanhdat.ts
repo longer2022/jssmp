@@ -13,8 +13,13 @@ export function prcess_string(str: string) {
 	return str_;
 }
 
+interface TextNode {
+	value: string;
+	next: TextNode
+}
+
 export function prcess_string2(str: string) {
-	let str_ = null;
+	let str_: TextNode = null;
 	str = str.toLowerCase();
 	let str__ = str.split(" ").sort();
 	for (let i in str__) {
@@ -25,11 +30,10 @@ export function prcess_string2(str: string) {
 }
 
 
-
 //HIGH PERFOMANCE AREA START =========================================
 
-export function match(input, str) {
-	var i = str.length - 1;
+export function match(input: string, str: string) {
+	let i = str.length - 1;
 	if (i != -1) {
 		do {
 			if (input.indexOf(str[i]) < 0)
@@ -39,7 +43,7 @@ export function match(input, str) {
 	return true;
 }
 
-export function match2(input, str) {
+export function match2(input: string, str: TextNode) {
 	for (; str; str = str.next)
 		if (input.indexOf(str.value) < 0)
 			return false;

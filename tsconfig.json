@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "target": "ESNext",
+    "lib": [
+      "ES2020",
+      "ScriptHost"
+    ],
+    "outDir": "./dist",
+  },
+  "include": [
+    "src/**/*.ts"
+  ]
+}
