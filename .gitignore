@@ -1,2 +1,2 @@
 /node_modules
-/dist/import_*.js
+packages/*/dist
