@@ -1,11 +1,13 @@
 // JS Stack Splitter.
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
 export class Margin {
 	left: number;
 	top: number;
 	right: number;
 	bottom: number;
-	constructor(l: number, t: number, r: number, b: number) {
+
+	constructor(l?: number, t?: number, r?: number, b?: number) {
 		this.left = l || 0;
 		this.top = t || 0;
 		this.right = r || 0;
@@ -20,11 +22,17 @@ export class Margin {
 			&& margin.top === this.top
 			&& margin.bottom === this.bottom;
 	}
+
+	toString() {
+		return `margin: ${[this.left, this.top, this.right, this.bottom]}`
+	}
 }
+
 
 export class Dimention {
 	width: number;
 	height: number;
+
 	constructor(w: number, h: number) {
 		this.width = w || 0;
 		this.height = h || 0;
@@ -40,6 +48,7 @@ export class Dimention {
 class Position {
 	x: number;
 	y: number;
+
 	constructor(x: number, y: number) {
 		this.x = x || 0;
 		this.y = y || 0;
@@ -94,6 +103,9 @@ export class Rect {
 		return [this.x, this.y, this.width, this.height].join(",")
 	}
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export const enum SizeLimit { No, Element, ElementChildren };
 

@@ -7,6 +7,6 @@
     "typescript": "^4.5.5"
   },
   "scripts": {
-    "build": "esbuild src/main.ts --bundle --platform=node --outfile=dist/catrox_main.js"
+    "build": "esbuild src/main.ts --bundle --target=firefox57 --outfile=dist/catrox_main.js"
   }
 }

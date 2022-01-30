@@ -2,7 +2,7 @@
  * Not a complete interface of `FileSystemObject`
  * @see
  */
-interface FileSystemObject {
+interface FileSystemObject extends ActiveXObject {
 	BuildPath: (path: string, name: string) => string;
 	CopyFile: (src: string, dst: string, overwrite?: boolean) => boolean;
 	CopyFolder: (src: string, dst: string, overwrite?: boolean) => boolean;
@@ -31,4 +31,14 @@ interface FileSystemObject {
 
 interface File { }
 
-export const fso: FileSystemObject = new ActiveXObject("Scripting.FileSystemObject");
+export let fso: FileSystemObject;
+export const com: {
+	fso: FileSystemObject;
+} = {
+	fso: fso,
+}
+
+try {
+	(<ActiveXObject>fso) = new ActiveXObject("Scripting.FileSystemObject");
+} catch (e) { }
+
