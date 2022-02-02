@@ -284,7 +284,6 @@ export class CompositionBase {
 		}
 	}
 
-
 	get sizeAffectParent() {
 		return this.props.sizeAffectParent || (this.props.sizeAffectParent = false);
 	}

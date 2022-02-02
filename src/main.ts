@@ -1,21 +1,11 @@
-import { RGB } from "src/common/helpers";
-import { Margin } from "src/common/stacksplitter";
+import { onPaint, onSize } from "common/callbacks";
 
-export function on_paint(gr: GdiGraphics) {
-	gr.FillSolidRect(0, 0, window.Width, window.Height, RGB(0, 0, 0))
-}
+onSize.event(function onsize() {
+	console.log("on_size");
+});
 
-export function on_size() {
+onPaint.event(function onpaint(gr: GdiGraphics) {
+	gr.FillSolidRect(0, 0, 200, 200, 0xff222222);
+	console.log("onpaint");
+});
 
-}
-
-export function on_mouse_move(x: number, y: number) {
-}
-
-
-let margin_test = new Margin();
-console.log(margin_test);
-
-if (typeof "module" == undefined) {
-	var module = {}
-}

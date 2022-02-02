@@ -1,3 +1,5 @@
+import { Emitter } from "vs/base/common/event";
+import { MK_SHIFT } from "./flags";
 
 const globalThis_ = Function("return this")();
 
@@ -47,26 +49,23 @@ type callbackNames = 'on_paint'
 	| 'on_color_changed'
 	| 'on_colour_changed';
 
+export const onSize = new Emitter<void>();
+export const onPaint = new Emitter<GdiGraphics>()
+export const onMouseMove = new Emitter<{ x: number, y: number }>();
+export const onMouseLbtnDown = new Emitter<{ x: number; y: number; mask?: number }>();
+export const onMouseLbtnUp = new Emitter<{ x: number; y: number; mask?: number }>();
+export const onMouseRbtnDown = new Emitter<{ x: number; y: number; mask?: number }>();
+export const onMouseRbtnUp = new Emitter<{ x: number; y: number; mask?: number }>();
 
-function registerCallback(event: callbackNames, fn: Function, context: any) {
-	if (typeof fn !== "function") {
-		throw new TypeError('registerCallback: fn must be a function');
-	}
-	if (globalThis_[event] && typeof (globalThis_[event]) !== "function") {
-		throw new TypeError('registerCallback: `${event}` must be a function');
-	}
-	// context = (context || this);
-	if (!globalThis_[event]) {
-		globalThis_[event] = (a1: any, a2: any, a3: any, a4: any) => {
-			let len = arguments.length;
-			switch (len) {
-				case 0: return fn.call(context);
-				case 1: return fn.call(context, a1);
-				case 2: return fn.call(context, a1, a2);
-				case 3: return fn.call(context, a1, a2, a3);
-				case 4: return fn.call(context, a1, a2, a3, a4);
-				default: return fn.apply(context, arguments);
-			}
-		};
-	}
+
+globalThis_["on_size"] = function on_size() {
+	onSize.fire()
+}
+
+globalThis_["on_paint"] = function on_paint(gr: GdiGraphics) {
+	onPaint.fire(gr);
+}
+
+globalThis_["on_mouse_move"] = function on_mouse_move(x: number, y: number) {
+	onMouseMove.fire({ x, y });
 }
