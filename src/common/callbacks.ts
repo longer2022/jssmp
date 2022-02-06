@@ -1,5 +1,4 @@
 import { Emitter } from "vs/base/common/event";
-import { MK_SHIFT } from "./flags";
 
 const globalThis_ = Function("return this")();
 

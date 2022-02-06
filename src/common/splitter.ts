@@ -1,4 +1,4 @@
-// JS Stack Splitter.
+// JS Splitter.
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 export class Margin {
@@ -21,10 +21,6 @@ export class Margin {
 			&& margin.right === this.right
 			&& margin.top === this.top
 			&& margin.bottom === this.bottom;
-	}
-
-	toString() {
-		return `margin: ${[this.left, this.top, this.right, this.bottom]}`
 	}
 }
 
@@ -62,10 +58,24 @@ class Position {
 }
 
 export class Rect {
+
 	x: number;
 	y: number;
 	width: number;
 	height: number;
+
+	get right() { return this.x + this.width; }
+
+	set right(val: number) {
+		this.width = val - this.x;
+	}
+
+	get bottom() { return this.y + this.height; }
+
+	set bottom(val: number) {
+		this.height = val - this.y;
+	}
+
 	constructor(x: number, y: number, w: number, h: number) {
 		this.x = x || 0;
 		this.y = y || 0;
@@ -73,13 +83,6 @@ export class Rect {
 		this.height = h || 0;
 	}
 
-	get right() {
-		return this.x + this.width;
-	}
-
-	get bottom() {
-		return this.y + this.height;
-	}
 
 	move(ox: number, oy: number) {
 		this.x += ox;
@@ -99,25 +102,175 @@ export class Rect {
 			&& this.height === rect.height
 	}
 
-	toString() {
-		return [this.x, this.y, this.width, this.height].join(",")
-	}
 }
 
+export class Layout extends Rect {
+
+	ownerPanel?: Panel;
+
+	get parent() {
+		return this.ownerPanel?.parent;
+	}
+
+	get children() {
+		return this.ownerPanel?.children || [];
+	}
+
+	private _margin: Margin = new Margin();
+	get margin() {
+		return this._margin;
+	}
+
+	set margin(val: Margin) {
+		if (val && !val.eq(this._margin)) {
+			this._margin = val;
+			bufferStateChange();
+		}
+	}
+
+	private _padding = new Margin();
+	get padding() {
+		return this.padding;
+	}
+
+	set padding(val: Margin) {
+		if (val && !val.eq(this._padding)) {
+			this._padding = val;
+			bufferStateChange();
+		}
+	}
+
+	transparentToMouse = false;
+	sizeLimit = SizeLimit.No;
+
+	constructor() { }
+
+	getClientArea() {
+		const area = this.getBounds();
+		area.x += this.margin.left + this.padding.left;
+		area.y += this.margin.top + this.padding.top;
+		area.width -= (this.margin.left + this.margin.right)
+			+ (this.padding.left + this.padding.right);
+		area.height -= (this.margin.top + this.margin.bottom)
+			+ (this.padding.top + this.padding.bottom);
+		return area;
+	}
+
+	getPreferredClientSize(): Dimention {
+		let minSize = new Dimention(this.minWidth, this.minHeight);
+		if (this.sizeLimit !== SizeLimit.No) { }
+		if (this.ownerPanel && this.sizeLimit === SizeLimit.ElementChildren) {
+			const children = this.ownerPanel.children;
+			for (let i = 0; i < children.length; i++) {
+				const child = children[i];
+				const childBounds = child.layout.getPreferredBounds();
+				if (minSize.width < childBounds.width) {
+					minSize.width = childBounds.width;
+				}
+				if (minSize.height < childBounds.height) {
+					minSize.height = childBounds.height;
+				}
+			}
+		}
+		return minSize;
+	}
+
+	protected getBoundsInternal(ex: number, ey: number, ew: number, eh: number) {
+		const minSize = this.getPreferredClientSize();
+		minSize.width += (this.margin.right + this.margin.left
+			+ this.padding.right + this.padding.left);
+		minSize.height += this.margin.top + this.margin.bottom
+			+ this.padding.top + this.padding.bottom;
+		if (minSize.width < ew) minSize.width = ew;
+		if (minSize.height < eh) minSize.height = eh;
+		// TODO;
+		return new Rect(this.x, this.y, minSize.width, minSize.height);
+	}
+
+	getPreferredBounds() {
+		let clientSize = this.getPreferredClientSize();
+		return this.getBoundsInternal(
+			this.x, this.y,
+			clientSize.width, clientSize.height);
+	}
+
+	getBounds() {
+		return this.getPreferredBounds();
+	}
+
+}
+
+interface IPanel {
+
+}
+
+export class Panel {
+
+	layout: Layout;
+	parent: Panel;
+	children: Panel[] = [];
+
+	private _visible = true;
+	get visible() {
+		return this._visible;
+	}
+
+	set visible(val: boolean) {
+		if (this._visible !== val) {
+			this._visible = val;
+			bufferStateChange();
+		}
+	}
+
+	addChild(child: Panel): boolean {
+		return this.insertChild(this.children.length, child);
+	};
+
+	private insertChild(index: number, child: Panel) {
+		if (!child || child.parent) return false;
+		this.children.splice(index, 0, child);
+		child.parent = this;
+		child.onParentChanged(null, this);
+		this.onChildInsert(child);
+		bufferStateChange();
+		return true;
+	}
+
+	removeChild(child: Panel) {
+		if (!child) return false;
+		let idx = this.children.indexOf(child);
+		if (idx === -1) return false;
+
+		child.parent = null;
+		child.onParentChanged(this, null);
+		this.onChildRemoved(child);
+
+		this.children.splice(idx, 1);
+		bufferStateChange();
+		return true;
+	}
+
+}
+
+let testPanel = new Panel();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export const enum SizeLimit { No, Element, ElementChildren };
 
-export class CompositionBase {
-	props: CompositionBase;
+
+/**
+ * Composition and Element and Control what is the relationship?
+ */
+export class Composition {
+	props: Composition;
 	minWidth: number;
 	minHeight: number;
 	maxWidth: number;
 	maxHeight: number;
 	transparentToMouse: boolean;
-	children: CompositionBase[];
-	parent: CompositionBase;
+	children: Composition[];
+	parent: Composition;
 	x: number;
 	y: number;
 	private prevBounds: Rect;
@@ -137,11 +290,11 @@ export class CompositionBase {
 		this.parent = null;
 	}
 
-	addChild(child: CompositionBase) {
+	addChild(child: Composition) {
 		return this.insertChild(this.children.length, child);
 	}
 
-	private insertChild(index: number, child: CompositionBase) {
+	private insertChild(index: number, child: Composition) {
 		if (!child) return false;
 		if (child.parent) return false;
 		this.children.splice(index, 0, child);
@@ -155,7 +308,7 @@ export class CompositionBase {
 	}
 
 
-	removeChild(child: CompositionBase) {
+	removeChild(child: Composition) {
 		if (!child) { return false; }
 		let idx = this.children.indexOf(child);
 		if (idx === -1) return false;
@@ -169,15 +322,15 @@ export class CompositionBase {
 		return true;
 	}
 
-	onChildInsert(child: CompositionBase) {
+	onChildInsert(child: Composition) {
 		throw new Error("Method not implemented.");
 	}
 
-	onChildRemoved(child: CompositionBase) {
+	onChildRemoved(child: Composition) {
 		throw new Error("Method not implemented.");
 	}
 
-	onParentChanged(oldParent: CompositionBase, newParent: CompositionBase) {
+	onParentChanged(oldParent: Composition, newParent: Composition) {
 		throw new Error("Method not impl");
 	}
 
@@ -305,6 +458,33 @@ export class CompositionBase {
 			bufferStateChange();
 		}
 	}
+
+	findComposition(x: number, y: number, forMouseEvent?: boolean = false): Composition {
+		if (!this.visible) return null;
+		let bounds = this.getBounds();
+		let relativeBounds = new Rect(0, 0, bounds.width, bounds.height);
+		if (relativeBounds.contains(x, y)) {
+			let clientArea = this.getClientArea();
+			for (let i = this.children.length - 1; i >= 0; i--) {
+				let child = this.children[i];
+				let childBounds = child.getBounds();
+				let offsetX = childBounds.x + (clientArea.x - bounds.x);
+				let offsetY = childBounds.y + (clientArea.y - bounds.y);
+				let newX = x - offsetX;
+				let newY = y - offsetY;
+				let childResult = child.findComposition(newX, newY, forMouseEvent);
+				if (childResult) {
+					return childResult;
+				}
+			}
+		}
+
+		if (!forMouseEvent || !this.transparentToMouse) {
+			return this;
+		}
+
+		return null;
+	}
 }
 
 export function bufferStateChange() { }
@@ -315,7 +495,7 @@ export const Direction = {
 	V: 1,
 }
 
-export class StackComposition extends CompositionBase {
+export class StackComposition extends Composition {
 	direction: number;
 	gap: number;
 	adjust: number;
@@ -380,3 +560,11 @@ export class StackComposition extends CompositionBase {
 	}
 
 }
+
+
+
+export class StackSplitter { }
+
+export class TabContainer { }
+
+export class Splitter { }

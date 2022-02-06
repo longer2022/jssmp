@@ -2255,7 +2255,7 @@ interface Window {
 	 * @param {*=} default_val
 	 * @return {*}
 	 */
-	GetProperty(name: string, default_val: string | number): string | number;
+	GetProperty<T extends string | number | boolean>(name: string, default_val: T): T;
 
 	/**
 	 * This will trigger {@link module:callbacks~on_notify_data on_notify_data}(name, info) in other panels.<br>
@@ -2589,7 +2589,7 @@ interface FbFileInfo {
  * @constructor
  * @param {FbMetadbHandleList | FbMetadbHandle | Array<FbMetadbHandle> | null | undefined} [arg]
  */
-interface FbMetadbHandleList {
+interface FbMetadbHandleList extends Array<FbMetadbHandle> {
 	new(arg?: FbMetadbHandleList | FbMetadbHandle | FbMetadbHandle[]): FbMetadbHandleList;
 	/**
 	 * @type {number}
