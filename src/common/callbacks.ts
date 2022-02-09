@@ -68,3 +68,7 @@ globalThis_["on_paint"] = function on_paint(gr: GdiGraphics) {
 globalThis_["on_mouse_move"] = function on_mouse_move(x: number, y: number) {
 	onMouseMove.fire({ x, y });
 }
+
+globalThis_["on_mouse_lbtn_down"] = function on_mouse_lbtn_down(x: number, y: number, mask?: number) {
+	onMouseLbtnDown.fire({ x, y, mask })
+}
