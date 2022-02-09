@@ -1,5 +1,6 @@
 import { onMouseLbtnDown, onPaint, onSize } from "common/callbacks";
 import { Panel, randomColor, Rect } from "common/panel_splitter";
+import { MoveToInbox } from "../../../node_modules/@material-ui/icons/index";
 
 onSize.event(function onsize() {
 	// console.log("on_size");
@@ -17,8 +18,8 @@ onPaint.event(function onpaint(gr: GdiGraphics) {
 const _test_panel = new Panel();
 const a = new Panel();
 const b = new Panel();
-a.name = "a";
-b.name = "b";
+a.caption = "a";
+b.caption = "b";
 _test_panel.addChild([a, b]);
 _test_panel.logChild();
 
@@ -40,8 +41,10 @@ onPaint.event((gr: GdiGraphics) => {
 onMouseLbtnDown.event((event) => {
 	const result = _test_panel.findPanel(event.x, event.y)
 	if (result) {
-		console.log(result.name);
+		console.log(result.caption);
 	}
+	console.log("removeChild", _test_panel.removeChild(result))
+	window.Repaint();
 });
 
 function drawPanel(gr: GdiGraphics, panel: Panel) {

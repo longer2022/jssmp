@@ -1,6 +1,4 @@
-import { onPaint, onSize } from "common/callbacks";
 import { RGB } from "common/helpers";
-import { fillRect } from "main";
 
 export class Margin {
 	left: number;
@@ -131,7 +129,7 @@ interface IPanel {
 
 export class Panel implements IPanel {
 
-	name = "panel";
+	caption = "panel";
 
 	private _padding: Margin = new Margin();
 	get padding(): Margin {
@@ -172,7 +170,7 @@ export class Panel implements IPanel {
 		const bounds = this.bounds;
 		const relativeBounds = new Rect(0, 0, bounds.width, bounds.height);
 		if (relativeBounds.contains(x, y)) {
-			console.log(this.name, this.bounds, x, y);
+			console.log(this.caption, this.bounds, x, y);
 			for (let i = this.children.length - 1; i >= 0; i--) {
 				const child = this.children[i];
 				const childBounds = child.bounds;
@@ -205,9 +203,29 @@ export class Panel implements IPanel {
 		}
 	}
 
+	removeChild(arg: Panel | Panel[]) {
+		if (Array.isArray(arg)) {
+			for (let i = 0; i < arg.length; i++) {
+				if (!this.removeChild(arg[i])) return false;
+			}
+			return true;
+		} else {
+			if (!arg) return false;
+			let idx = this.children.indexOf(arg);
+			if (idx === -1) return false;
+
+			arg.parent = null;
+			// child.onParentCHanged(this, null);
+			// this.onChildRemoved(child);
+			this.children.splice(idx, 1);
+			// bufferChangeState();
+			return true;
+		}
+	}
+
 	// for test;
 	logChild() {
-		console.log(this.children.map(child => child.name));
+		console.log(this.children.map(child => child.caption));
 	}
 }
 
