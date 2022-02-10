@@ -1,15 +1,21 @@
 import { onMouseLbtnDown, onPaint, onSize } from "common/callbacks";
 import { Panel, randomColor, Rect } from "common/panel_splitter";
-import { MoveToInbox } from "../../../node_modules/@material-ui/icons/index";
 
-onSize.event(function onsize() {
-	// console.log("on_size");
-});
+/**
+ * draw a panel and it's children;
+ */
+function drawPanel(gr: GdiGraphics, panel: Panel) {
+	if (!panel || !panel.visible) return;
 
-onPaint.event(function onpaint(gr: GdiGraphics) {
-	// gr.FillSolidRect(0, 0, 200, 200, 0xff222222);
-	// console.log("onpaint");
-});
+	// draw self;
+	fillRect(gr, panel.bounds, randomColor());
+	panel.draw && panel.draw(gr);
+
+	// draw children;
+	for (let i = 0; i < panel.children.length; i++) {
+		drawPanel(gr, panel.children[i]);
+	}
+}
 
 
 ///////////////////////////////////////////////////////
@@ -22,6 +28,13 @@ a.caption = "a";
 b.caption = "b";
 _test_panel.addChild([a, b]);
 _test_panel.logChild();
+
+a.boundsProps = {
+	x: 50,
+	y: 50,
+	width: () => a.parent.bounds.width / 2,
+	height: () => a.parent.bounds.height - 100,
+}
 
 export function fillRect(gr: GdiGraphics, bounds: Rect, color: number) {
 	gr.FillSolidRect(bounds.x, bounds.y, bounds.width, bounds.height, color);
@@ -46,11 +59,3 @@ onMouseLbtnDown.event((event) => {
 	console.log("removeChild", _test_panel.removeChild(result))
 	window.Repaint();
 });
-
-function drawPanel(gr: GdiGraphics, panel: Panel) {
-	if (!panel) return;
-	fillRect(gr, panel.bounds, randomColor());
-	for (let i = 0; i < panel.children.length; i++) {
-		drawPanel(gr, panel.children[i]);
-	}
-}

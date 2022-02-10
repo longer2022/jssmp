@@ -1,4 +1,6 @@
 import { RGB } from "common/helpers";
+import { Emitter } from "vs/base/common/event";
+import { DT_NOFULLWIDTHCHARBREAK } from "./flags";
 
 export class Margin {
 	left: number;
@@ -119,28 +121,36 @@ export function randomColor() {
 
 interface IPanel {
 
-	get padding(): Margin;
-	set padding(val: Margin);
+	// get padding(): Margin;
+	// set padding(val: Margin);
 
 	get bounds(): Rect;
 	set bounds(val: Rect);
 
 }
 
+type NF = (() => number) | number;
+export interface BoundsProps {
+	x?: NF;
+	y?: NF;
+	width?: NF;
+	height?: NF;
+}
+
 export class Panel implements IPanel {
 
 	caption = "panel";
 
-	private _padding: Margin = new Margin();
-	get padding(): Margin {
-		return this._padding;
-	}
+	// private _padding: Margin = new Margin();
+	// get padding(): Margin {
+	// 	return this._padding;
+	// }
 
-	set padding(val: Margin) {
-		if (!(this._padding && this._padding.eq(val))) {
-			this._padding = val;
-		}
-	}
+	// set padding(val: Margin) {
+	// 	if (!(this._padding && this._padding.eq(val))) {
+	// 		this._padding = val;
+	// 	}
+	// }
 
 	private _bounds: Rect;
 	get bounds(): Rect {
@@ -152,6 +162,19 @@ export class Panel implements IPanel {
 		}
 	}
 
+	/**
+	 * Similar to panel_splitter.dll's area properties.  each key can be a
+	 * number or a function that returns a number so that it can calculate
+	 * bounds from like parent's bounds props.
+	 */
+	private _boundsProps: BoundsProps = {};
+	get boundsProps(): BoundsProps {
+		return this._boundsProps || {};
+	}
+	set boundsProps(val: BoundsProps) {
+		Object.assign(this._boundsProps, val);
+	}
+
 	parent: Panel;
 	children: Panel[] = [];
 
@@ -160,7 +183,6 @@ export class Panel implements IPanel {
 	set visible(val: boolean) { if (this._visible !== val) this._visible = val; }
 
 	constructor() { }
-
 
 	/**
 	 * 递归地执行，意味着root必须传入global position。
@@ -227,5 +249,10 @@ export class Panel implements IPanel {
 	logChild() {
 		console.log(this.children.map(child => child.caption));
 	}
+
+	draw?: (gr: GdiGraphics) => void;
+
+	layout?: () => void;
+
 }
 
