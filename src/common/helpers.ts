@@ -61,3 +61,7 @@ export function get_system_scrollbar_width() {
 export function get_system_scrollbar_height() {
 	return utils.GetSystemMetrics(SM_CYHSCROLL);
 }
+
+export function randomColor() {
+	return RGB(Math.floor(255 * Math.random()), Math.floor(255 * Math.random()), Math.floor(255 * Math.random()));
+}

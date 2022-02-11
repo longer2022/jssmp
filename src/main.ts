@@ -1,5 +1,6 @@
 import { onMouseLbtnDown, onPaint, onSize } from "common/callbacks";
-import { Panel, randomColor, Rect } from "common/panel_splitter";
+import { randomColor } from "common/helpers";
+import { Panel, Rect } from "common/panel_splitter";
 
 /**
  * draw a panel and it's children;
@@ -17,6 +18,16 @@ function drawPanel(gr: GdiGraphics, panel: Panel) {
 	}
 }
 
+function layoutPanel(panel: Panel) {
+	if (!panel || !panel.visible) return;
+
+	panel.layout && panel.layout();
+
+	for (let i = 0; i < panel.children.length; i++) {
+		layoutPanel(panel.children[i]);
+	}
+}
+
 
 ///////////////////////////////////////////////////////
 // test panel
@@ -29,6 +40,10 @@ b.caption = "b";
 _test_panel.addChild([a, b]);
 _test_panel.logChild();
 
+_test_panel.boundsProps = {
+	x: 0, y: 0, width: () => window.Width, height: () => window.Height
+}
+
 a.boundsProps = {
 	x: 50,
 	y: 50,
@@ -36,15 +51,24 @@ a.boundsProps = {
 	height: () => a.parent.bounds.height - 100,
 }
 
+b.boundsProps = {
+	x: () => a.bounds.right,
+	y: () => a.bounds.bottom,
+	width: 100,
+	height: 20
+}
+
+console.log(a.boundsProps);
+// a.layout();
+console.log(a.bounds)
+
 export function fillRect(gr: GdiGraphics, bounds: Rect, color: number) {
 	gr.FillSolidRect(bounds.x, bounds.y, bounds.width, bounds.height, color);
 }
 
 onSize.event(() => {
-	_test_panel.bounds = new Rect(0, 0, window.Width, window.Height);
-
-	a.bounds = new Rect(0, 0, 100, 200);
-	b.bounds = new Rect(50, 50, 300, 100);
+	// _test_panel.bounds = new Rect(0, 0, window.Width, window.Height);
+	layoutPanel(_test_panel);
 });
 
 onPaint.event((gr: GdiGraphics) => {
@@ -56,6 +80,6 @@ onMouseLbtnDown.event((event) => {
 	if (result) {
 		console.log(result.caption);
 	}
-	console.log("removeChild", _test_panel.removeChild(result))
+	// console.log("removeChild", _test_panel.removeChild(result))
 	window.Repaint();
 });

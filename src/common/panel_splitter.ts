@@ -1,6 +1,3 @@
-import { RGB } from "common/helpers";
-import { Emitter } from "vs/base/common/event";
-import { DT_NOFULLWIDTHCHARBREAK } from "./flags";
 
 export class Margin {
 	left: number;
@@ -115,19 +112,6 @@ export class Rect {
 	}
 }
 
-export function randomColor() {
-	return RGB(Math.floor(255 * Math.random()), Math.floor(255 * Math.random()), Math.floor(255 * Math.random()));
-}
-
-interface IPanel {
-
-	// get padding(): Margin;
-	// set padding(val: Margin);
-
-	get bounds(): Rect;
-	set bounds(val: Rect);
-
-}
 
 type NF = (() => number) | number;
 export interface BoundsProps {
@@ -137,7 +121,7 @@ export interface BoundsProps {
 	height?: NF;
 }
 
-export class Panel implements IPanel {
+export class Panel {
 
 	caption = "panel";
 
@@ -152,7 +136,7 @@ export class Panel implements IPanel {
 	// 	}
 	// }
 
-	private _bounds: Rect;
+	private _bounds: Rect = new Rect(0, 0, 0, 0);
 	get bounds(): Rect {
 		return this._bounds;
 	}
@@ -176,7 +160,7 @@ export class Panel implements IPanel {
 	}
 
 	parent: Panel;
-	children: Panel[] = [];
+	readonly children: Panel[] = [];
 
 	private _visible = true;
 	get visible() { return this._visible };
@@ -252,7 +236,32 @@ export class Panel implements IPanel {
 
 	draw?: (gr: GdiGraphics) => void;
 
-	layout?: () => void;
+	layout() {
+		if (this.boundsProps) {
+			// calculate bounds;
+			let { x, y, width, height } = this.boundsProps;
+			let bounds = new Rect(this.bounds.x, this.bounds.y, this.bounds.width, this.bounds.height);
+
+			updateBounds(bounds, "x", x);
+			updateBounds(bounds, 'y', y);
+			updateBounds(bounds, 'width', width);
+			updateBounds(bounds, 'height', height);
+
+			// set bounds;
+			this.bounds = bounds;
+			console.log("layout: ", this.caption);
+			console.log(this.bounds);
+		}
+	}
 
 }
 
+function updateBounds(bounds: Rect, key: "x" | "y" | "width" | "height", p: NF) {
+	if (typeof p === 'function') {
+		bounds[key] = p();
+	} else if (typeof p === 'number') {
+		bounds[key] = p;
+	} else {
+		// update nothing;
+	}
+}
