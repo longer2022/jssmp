@@ -1,7 +1,7 @@
 // playlist;
 
 import { GroupedList } from "common/listview";
-import { Rect } from "common/splitter";
+import { Rect } from "common/panel_splitter";
 
 function GetProperty<T extends number | string | boolean>(keyname: string, defaultVal: T): T {
 	return window.GetProperty(keyname, defaultVal);

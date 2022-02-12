@@ -2,6 +2,10 @@ import { onMouseLbtnDown, onPaint, onSize } from "common/callbacks";
 import { randomColor } from "common/helpers";
 import { Panel, Rect } from "common/panel_splitter";
 
+export function fillRect(gr: GdiGraphics, bounds: Rect, color: number) {
+	gr.FillSolidRect(bounds.x, bounds.y, bounds.width, bounds.height, color);
+}
+
 /**
  * draw a panel and it's children;
  */
@@ -58,16 +62,7 @@ b.boundsProps = {
 	height: 20
 }
 
-console.log(a.boundsProps);
-// a.layout();
-console.log(a.bounds)
-
-export function fillRect(gr: GdiGraphics, bounds: Rect, color: number) {
-	gr.FillSolidRect(bounds.x, bounds.y, bounds.width, bounds.height, color);
-}
-
 onSize.event(() => {
-	// _test_panel.bounds = new Rect(0, 0, window.Width, window.Height);
 	layoutPanel(_test_panel);
 });
 
@@ -80,6 +75,6 @@ onMouseLbtnDown.event((event) => {
 	if (result) {
 		console.log(result.caption);
 	}
-	// console.log("removeChild", _test_panel.removeChild(result))
+	console.log("removeChild", _test_panel.removeChild(result))
 	window.Repaint();
 });
