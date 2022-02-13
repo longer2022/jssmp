@@ -120,6 +120,8 @@ export interface BoundsProps {
 	height?: NF;
 }
 
+export function bufferChangeState() { }
+
 export class Panel {
 
 	caption = "panel";
@@ -203,6 +205,7 @@ export class Panel {
 			if (arg.parent) return false;
 			this.children.push(arg);
 			arg.parent = this;
+			this.onParentChanged(null, this);
 			return true;
 		}
 	}
@@ -219,11 +222,20 @@ export class Panel {
 			if (idx === -1) return false;
 
 			arg.parent = null;
-			// child.onParentCHanged(this, null);
-			// this.onChildRemoved(child);
+			this.onParentChanged(this, null);
 			this.children.splice(idx, 1);
 			// bufferChangeState();
 			return true;
+		}
+	}
+
+	protected onParentChanged(oldParent: Panel, newParent: Panel) {
+		this.onParentLineChanged();
+	}
+
+	protected onParentLineChanged() {
+		for (let i = 0; i < this.children.length; i++) {
+			this.children[i].onParentLineChanged();
 		}
 	}
 
@@ -265,33 +277,71 @@ function updateBounds(bounds: Rect, key: "x" | "y" | "width" | "height", p: NF) 
 
 export enum Direction { V, H }
 
-class StackProps {
+enum SizeConstraint {
+	/** Width or height cannot be resized, according to Direction. */
+	Fixed,
+
+	// /** Width or height can vary from `min` to `max`. */
+	// Restricted,
+
+	/** No restriction. */
+	Defaults,
+}
+
+class ColumnOption {
 	width = 0;
 	sizeWeight = 50;
 }
 
+export class SplitterItem extends Panel {
 
-export class Splitter extends Panel {
+	caption = 'SplitterItem';
+
+	splitterParent: Splitter;
+
+	override onParentChanged(oldParent: Splitter, newParent: Splitter) {
+		super.onParentChanged(oldParent, newParent);
+		this.splitterParent = newParent;
+	}
+
+}
+
+export class Splitter extends SplitterItem {
+
+	caption: string = 'VSplitter';
 
 	direction: Direction = Direction.V;
 
 	splitters: Panel[] = [];
 	splitterWidth = 8;
-	columns: Panel[] = [];
-	columnSize: StackProps[] = [];
+	columns: SplitterItem[] = [];
+	columnSize: ColumnOption[] = [];
 
-	addPanel(panel: Panel) {
-		if (this.addChild(panel)) {
-			// add panel
-			this.columns.push(panel);
-			this.columnSize.push(new StackProps);
 
-			// add splitter
-			if (this.columns.length > 1) {
-				const splitter = new Panel();
-				this.addChild(splitter);
-				this.splitters.push(splitter);
+	addSplitterItem(panel: SplitterItem | SplitterItem[]) {
+		if (Array.isArray(panel)) {
+			for (let i = 0; i < panel.length; i++) {
+				if (!this.addSplitterItem(panel[i])) return false;
 			}
+			return true;
+		} else {
+			if (this.addChild(panel)) {
+				this.columns.push(panel);
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+
+	removeSplitterItem(panel: SplitterItem | SplitterItem[]) {
+		if (Array.isArray(panel)) {
+			for (let i = 0; i < panel.length; i++) {
+				if (!this.removeSplitterItem(panel[i])) return false;
+			}
+			return true;
+		} else {
+
 		}
 	}
 
@@ -305,7 +355,7 @@ export class Splitter extends Panel {
 		let columnWidth = ((bounds.width - (n - 1) * this.splitterWidth) / n) | 0;
 		//totalwidth from config;
 		for (let i = 0; i < this.columns.length; i++) {
-			this.columnSize[i] = new StackProps();
+			this.columnSize[i] = new ColumnOption();
 			this.columnSize[i].width = columnWidth;
 		}
 	}

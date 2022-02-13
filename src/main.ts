@@ -1,6 +1,6 @@
 import { onMouseLbtnDown, onPaint, onSize } from "common/callbacks";
 import { randomColor } from "common/helpers";
-import { Panel, Rect, WindowPanel } from "common/panel_splitter";
+import { Panel, Rect, Splitter, SplitterItem, WindowPanel } from "common/panel_splitter";
 
 export function fillRect(gr: GdiGraphics, bounds: Rect, color: number) {
 	gr.FillSolidRect(bounds.x, bounds.y, bounds.width, bounds.height, color);
@@ -44,16 +44,16 @@ function layoutPanel(panel: Panel) {
 // test panel
 
 const _test_panel = new WindowPanel();
-const a = new Panel();
+const a = new Splitter();
 const b = new Panel();
-a.caption = "a";
-b.caption = "b";
+
+b.caption += " - b"
 _test_panel.addChild([a, b]);
 
-const c = new Panel();
-const d = new Panel();
+const c = new SplitterItem();
+const d = new SplitterItem();
 
-a.addChild([c, d])
+a.addSplitterItem([c, d])
 
 _test_panel.boundsProps = {
 	x: 0, y: 0, width: () => window.Width, height: () => window.Height
