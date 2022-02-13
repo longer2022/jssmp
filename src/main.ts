@@ -1,9 +1,16 @@
 import { onMouseLbtnDown, onPaint, onSize } from "common/callbacks";
 import { randomColor } from "common/helpers";
-import { Panel, Rect } from "common/panel_splitter";
+import { Panel, Rect, WindowPanel } from "common/panel_splitter";
 
 export function fillRect(gr: GdiGraphics, bounds: Rect, color: number) {
 	gr.FillSolidRect(bounds.x, bounds.y, bounds.width, bounds.height, color);
+}
+
+export function printLayout(panel: Panel, indent: number = 0) {
+	console.log(" ".repeat(indent) + (panel.children.length > 0 ? "\u2193" : " ") + " " + panel.caption)
+	for (let i = 0; i < panel.children.length; i++) {
+		printLayout(panel.children[i], indent + 2);
+	}
 }
 
 /**
@@ -36,13 +43,17 @@ function layoutPanel(panel: Panel) {
 ///////////////////////////////////////////////////////
 // test panel
 
-const _test_panel = new Panel();
+const _test_panel = new WindowPanel();
 const a = new Panel();
 const b = new Panel();
 a.caption = "a";
 b.caption = "b";
 _test_panel.addChild([a, b]);
-_test_panel.logChild();
+
+const c = new Panel();
+const d = new Panel();
+
+a.addChild([c, d])
 
 _test_panel.boundsProps = {
 	x: 0, y: 0, width: () => window.Width, height: () => window.Height
@@ -78,3 +89,9 @@ onMouseLbtnDown.event((event) => {
 	console.log("removeChild", _test_panel.removeChild(result))
 	window.Repaint();
 });
+
+
+// print layout tree
+console.log("------------------ layout ----------------")
+printLayout(_test_panel, 0);
+console.log("------------------------------------------")

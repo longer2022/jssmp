@@ -1,4 +1,3 @@
-
 export class Margin {
 	left: number;
 	top: number;
@@ -176,7 +175,6 @@ export class Panel {
 		const bounds = this.bounds;
 		const relativeBounds = new Rect(0, 0, bounds.width, bounds.height);
 		if (relativeBounds.contains(x, y)) {
-			console.log(this.caption, this.bounds, x, y);
 			for (let i = this.children.length - 1; i >= 0; i--) {
 				const child = this.children[i];
 				const childBounds = child.bounds;
@@ -229,11 +227,6 @@ export class Panel {
 		}
 	}
 
-	// for test;
-	logChild() {
-		console.log(this.children.map(child => child.caption));
-	}
-
 	draw?: (gr: GdiGraphics) => void;
 
 	layout() {
@@ -249,11 +242,15 @@ export class Panel {
 
 			// set bounds;
 			this.bounds = bounds;
-			console.log("layout: ", this.caption);
-			console.log(this.bounds);
 		}
 	}
 
+}
+
+export class WindowPanel extends Panel {
+	caption = 'window';
+	get boundsProps() { return { x: 0, y: 0, width: () => window.Width, height: () => window.Height } };
+	set boundsProps(val: BoundsProps) { }
 }
 
 function updateBounds(bounds: Rect, key: "x" | "y" | "width" | "height", p: NF) {
@@ -264,4 +261,53 @@ function updateBounds(bounds: Rect, key: "x" | "y" | "width" | "height", p: NF) 
 	} else {
 		// update nothing;
 	}
+}
+
+export enum Direction { V, H }
+
+class StackProps {
+	width = 0;
+	sizeWeight = 50;
+}
+
+
+export class Splitter extends Panel {
+
+	direction: Direction = Direction.V;
+
+	splitters: Panel[] = [];
+	splitterWidth = 8;
+	columns: Panel[] = [];
+	columnSize: StackProps[] = [];
+
+	addPanel(panel: Panel) {
+		if (this.addChild(panel)) {
+			// add panel
+			this.columns.push(panel);
+			this.columnSize.push(new StackProps);
+
+			// add splitter
+			if (this.columns.length > 1) {
+				const splitter = new Panel();
+				this.addChild(splitter);
+				this.splitters.push(splitter);
+			}
+		}
+	}
+
+	// calculate and set each panels' boundsProps;
+	calculateLayout() {
+		if (this.columns.length === 0) return;
+		const bounds = this.bounds;
+		let n = this.columns.length;
+
+		let totalWidth = 0;
+		let columnWidth = ((bounds.width - (n - 1) * this.splitterWidth) / n) | 0;
+		//totalwidth from config;
+		for (let i = 0; i < this.columns.length; i++) {
+			this.columnSize[i] = new StackProps();
+			this.columnSize[i].width = columnWidth;
+		}
+	}
+
 }
